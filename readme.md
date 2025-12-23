@@ -88,7 +88,7 @@ let server_response = bob.server_receive(
 )?;
 
 // Alice decapsulates the shared secret
-alice.client_confirm(server_response)?;
+alice.client_confirm(server_response);
 
 // Both key exchange structs now have the same shared secret
 assert_eq!(alice.shared_secret, bob.shared_secret);
@@ -112,7 +112,7 @@ let server_response = bob.server_receive(
   client_init, &alice_keys.public, &bob_keys.secret, &mut rng
 )?;
 
-alice.client_confirm(server_response, &alice_keys.secret)?;
+alice.client_confirm(server_response, &alice_keys.secret);
 
 assert_eq!(alice.shared_secret, bob.shared_secret);
 ```

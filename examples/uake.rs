@@ -16,7 +16,7 @@ fn main() -> Result<(), KyberError> {
     let server_send = bob.server_receive(client_send, &bob_keys.secret, &mut rng)?;
 
     // Alice autheticates and decapsulates
-    alice.client_confirm(server_send)?;
+    alice.client_confirm(server_send);
 
     // Both structs now have the shared secret
     assert_eq!(alice.shared_secret, bob.shared_secret);

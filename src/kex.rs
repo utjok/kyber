@@ -48,10 +48,12 @@ type Eska = [u8; KYBER_SECRETKEYBYTES];
 ///
 /// let client_init = alice.client_init(&bob_keys.public, &mut rng)?;
 /// let server_send = bob.server_receive(client_init, &bob_keys.secret, &mut rng)?;
-/// let client_confirm = alice.client_confirm(server_send)?;
+/// let client_confirm = alice.client_confirm(server_send);
 ///
 /// assert_eq!(alice.shared_secret, bob.shared_secret);
-/// # Ok(()) }
+///  Ok(())
+/// 
+/// }
 
 #[cfg_attr(feature = "zeroize", derive(Zeroize, ZeroizeOnDrop))]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -158,12 +160,11 @@ impl Uake {
     /// # let bob_keys = keypair(&mut rng)?;
     /// let client_init = alice.client_init(&bob_keys.public, &mut rng)?;
     /// let server_send = bob.server_receive(client_init, &bob_keys.secret, &mut rng)?;
-    /// let client_confirm = alice.client_confirm(server_send)?;
+    /// let client_confirm = alice.client_confirm(server_send);
     /// assert_eq!(alice.shared_secret, bob.shared_secret);
     /// # Ok(()) }
-    pub fn client_confirm(&mut self, send_b: UakeSendResponse) -> Result<(), KyberError> {
-        uake_shared_a(&mut self.shared_secret, &send_b, &self.temp_key, &self.eska)?;
-        Ok(())
+    pub fn client_confirm(&mut self, send_b: UakeSendResponse) {
+        uake_shared_a(&mut self.shared_secret, &send_b, &self.temp_key, &self.eska)
     }
 }
 
@@ -183,7 +184,7 @@ impl Uake {
 ///
 /// let client_init = alice.client_init(&bob_keys.public, &mut rng)?;
 /// let server_send = bob.server_receive(client_init, &alice_keys.public, &bob_keys.secret, &mut rng)?;
-/// let client_confirm = alice.client_confirm(server_send, &alice_keys.secret)?;
+/// let client_confirm = alice.client_confirm(server_send, &alice_keys.secret);
 ///
 /// assert_eq!(alice.shared_secret, bob.shared_secret);
 /// # Ok(()) }
@@ -300,19 +301,14 @@ impl Ake {
     /// let client_confirm = alice.client_confirm(server_send, &alice_keys.secret);
     /// assert_eq!(alice.shared_secret, bob.shared_secret);
     /// # Ok(()) }
-    pub fn client_confirm(
-        &mut self,
-        send_b: AkeSendResponse,
-        secretkey: &SecretKey,
-    ) -> Result<(), KyberError> {
+    pub fn client_confirm(&mut self, send_b: AkeSendResponse, secretkey: &SecretKey) {
         ake_shared_a(
             &mut self.shared_secret,
             &send_b,
             &self.temp_key,
             &self.eska,
             secretkey,
-        )?;
-        Ok(())
+        )
     }
 }
 
@@ -355,12 +351,12 @@ where
 }
 
 // Unilaterally authenticated key exchange computation by Alice
-fn uake_shared_a(k: &mut [u8], recv: &[u8], tk: &[u8], sk: &[u8]) -> Result<(), KyberError> {
+#[inline]
+fn uake_shared_a(k: &mut [u8], recv: &[u8], tk: &[u8], sk: &[u8]) {
     let mut buf = [0u8; 2 * KYBER_SYMBYTES];
     crypto_kem_dec(&mut buf, recv, sk);
-    buf[KYBER_SYMBYTES..].copy_from_slice(&tk[..]);
+    buf[KYBER_SYMBYTES..].copy_from_slice(tk);
     kdf(k, &buf, 2 * KYBER_SYMBYTES);
-    Ok(())
 }
 
 // Authenticated key exchange initiation by Alice
@@ -410,13 +406,8 @@ where
 }
 
 // Mutually authenticated key exchange computation by Alice
-fn ake_shared_a(
-    k: &mut [u8],
-    recv: &[u8],
-    tk: &[u8],
-    sk: &[u8],
-    ska: &[u8],
-) -> Result<(), KyberError> {
+#[inline]
+fn ake_shared_a(k: &mut [u8], recv: &[u8], tk: &[u8], sk: &[u8], ska: &[u8]) {
     let mut buf = [0u8; 3 * KYBER_SYMBYTES];
     crypto_kem_dec(&mut buf, recv, sk);
     crypto_kem_dec(
@@ -424,7 +415,6 @@ fn ake_shared_a(
         &recv[KYBER_CIPHERTEXTBYTES..],
         ska,
     );
-    buf[2 * KYBER_SYMBYTES..].copy_from_slice(&tk[..]);
+    buf[2 * KYBER_SYMBYTES..].copy_from_slice(tk);
     kdf(k, &buf, 3 * KYBER_SYMBYTES);
-    Ok(())
 }

@@ -78,7 +78,7 @@
 //! )?;
 //!
 //! // Alice decapsulates the shared secret
-//! alice.client_confirm(server_send)?;
+//! alice.client_confirm(server_send);
 //!
 //! // Both key exchange structs now have the shared secret
 //! assert_eq!(alice.shared_secret, bob.shared_secret);
@@ -104,7 +104,7 @@
 //!   client_init, &alice_keys.public, &bob_keys.secret, &mut rng
 //! )?;
 //!
-//! alice.client_confirm(server_send, &alice_keys.secret)?;
+//! alice.client_confirm(server_send, &alice_keys.secret);
 //!
 //! assert_eq!(alice.shared_secret, bob.shared_secret);
 //! # Ok(()) }
@@ -114,7 +114,7 @@
 //! ## Errors
 //! The [KyberError](enum.KyberError.html) enum handles errors. It has two variants:
 //!
-//! * **InvalidInput** - One or more byte inputs to a function are incorrectly sized. A likely cause of
+//! **InvalidInput** - One or more byte inputs to a function are incorrectly sized. A likely cause of
 //! this is two parties using different security levels while trying to negotiate a key exchange.
 //!
 //! * **Decapsulation** - The ciphertext was unable to be authenticated. The shared secret was not decapsulated  
